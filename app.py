@@ -3,23 +3,26 @@ import sqlite3
 from datetime import datetime
 from functools import wraps
 
+from dotenv import load_dotenv
 from flask import Flask, abort, flash, g, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=False)
+
 DATABASE = os.environ.get("DATABASE_PATH", os.path.join(BASE_DIR, "store.db"))
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
-app.config.update(SECRET_KEY=os.environ.get("SECRET_KEY", "change-this-secret-before-production"), MAX_CONTENT_LENGTH=8 * 1024 * 1024)
+app.config.update(SECRET_KEY=os.environ.get("SECRET_KEY", "dev-secret-change-me"), MAX_CONTENT_LENGTH=8 * 1024 * 1024)
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "ChangeMe123!")
 
 CURRENCIES = {"EUR": (1 / 302, "EUR"), "USD": (1 / 278, "USD")}
-FREE_DELIVERY_MINIMUM_USD = 40
-GERMANY_STANDARD_SHIPPING = 1812  # internal base amount; displayed as about EUR 6
-INTERNATIONAL_SHIPPING = 6040  # internal base amount; displayed as about EUR 20
+FREE_DELIVERY_MINIMUM_USD = int(os.environ.get("FREE_DELIVERY_MINIMUM_USD", 40))
+GERMANY_STANDARD_SHIPPING = int(os.environ.get("GERMANY_STANDARD_SHIPPING", 1812))
+INTERNATIONAL_SHIPPING = int(os.environ.get("INTERNATIONAL_SHIPPING", 6040))
 LANGUAGES = {"en": "English", "ur": "اردو", "ar": "العربية"}
 
 PRODUCTS = [
